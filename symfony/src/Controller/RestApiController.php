@@ -2,9 +2,11 @@
 namespace App\Controller;
 
 use Exception;
+use \App\Entity\Logs;
+use \App\Image\Editor;
 use \App\Image\Logger;
 use \App\Image\Resize;
-use \App\Image\Editor;
+use \App\Entity\Images;
 use \App\Image\LoadFactory;
 use \App\Image\UploadException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
 use Psr\Log\LoggerInterface;
 
 /**
@@ -83,26 +84,53 @@ class RestApiController extends AbstractController
 
     /**
      * Получение информации об изображении
-     * Matches /api/get/{type}/*
+     * Matches /api/get/{type}
      *
-     * @Route("/api/get/{type}/*", name="api_getlist", methods={"GET"},  defaults={"type":"image", "id":null},
+     * @Route("/api/get/{type}", name="api_getlist", methods={"GET"},  defaults={"type":"image"},
      *        requirements={
-     *         "type": "image|error",
-     *         "id": "\d+"
+     *         "type": "image|error"
      *     })
      *
      * @param Request $request
-     * @param int $id
+     * @param string $type
      * @return JsonResponse
      */
-    public function getList(Request $request, int $id)
+    public function getList(Request $request, string $type)
     {
-        switch ($request->getMethod()) {
-            case 'GET':
-
-                break;
-            default:
-                return new JsonResponse(['error'=>1,'message'=>'Unsupported method']);
+        if ($type === 'image') {
+            $rep = $this->getDoctrine()->getRepository(Images::class);
+        } else {
+            $rep = $this->getDoctrine()->getRepository(Logs::class);
         }
+        $res = $rep->createQueryBuilder('q')->getQuery()->getArrayResult();
+        return new JsonResponse($res);
+    }
+
+    /**
+     * Удалить изображение
+     * Matches /api/delete/*
+     *
+     * @Route("/api/delete/{id}", name="api_delete", methods={"DELETE"}, defaults={"id":null},
+     *     requirements={"id":"\d+"})
+     *
+     * @param Request $request
+     * @param int $id
+     * @param string $project_dir
+     * @return JsonResponse
+     */
+    public function delete(Request $request, int $id, string $project_dir)
+    {
+        if (!$id) return new JsonResponse(['error'=>1,'message'=>'Id is empty']);
+        $rep = $this->getDoctrine()->getRepository(Images::class);
+        $img = $rep->findOneBy(['id'=>$id]);
+        if (!empty($img)) {
+            $em = $this->getDoctrine()->getManager();
+            $filePath = $project_dir . $img->getUrl();
+            unlink($filePath);
+            $em->remove($img);
+            $em->flush();
+            return new JsonResponse(['success'=>1,'message'=>"Image id #$id is deleted"]);
+        }
+        return new JsonResponse(['error'=>1,'message'=>'Image not found']);
     }
 }
