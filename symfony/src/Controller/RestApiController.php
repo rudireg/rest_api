@@ -57,7 +57,7 @@ class RestApiController extends AbstractController
                         $rv = $editor->process($img, $resize, $logger);
                     } catch (\Exception $e) {
                         $logger->error(UploadException::codeToMessage($e->getCode()), ['code'=>$e->getCode()]);
-                        throw new UploadException($e->getCode());
+                        return new JsonResponse(['error'=>$e->getCode(),'message'=>UploadException::codeToMessage($e->getCode())]);
                     }
                 }
                 return new JsonResponse(['success' => 1, 'images'=>$rv]);
