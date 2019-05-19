@@ -1,0 +1,42 @@
+version: '3'
+services:
+  nginx:
+    image: rudiwork/nginx:dev
+    ports:
+      - ${APP_PORT}:80
+    volumes:
+      - ./symfony/public:/app/public
+    networks:
+      - main
+    # links:
+    #  - php
+  php:
+    image: rudiwork/php7:dev
+    volumes:
+      - ./symfony:/app
+    networks:
+      - main
+    environment:
+      PHP_IDE_CONFIG: ${PHP_IDE_CONFIG}
+      PHP_XDEBUG_REMOTE_HOST: 192.168.1.98
+    # links:
+    #  - pg
+
+    user: 1000:1000
+
+  pg:
+    image: postgres:alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db_dumps:/dumps
+    environment:
+      POSTGRES_PASSWORD: fsdfs345365fdFFDDsss
+    ports:
+      - ${PG_PORT}:5432
+    networks:
+      - main
+
+networks:
+    main:
+volumes:
+    pgdata:

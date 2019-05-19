@@ -1,0 +1,11 @@
+{% extends "base.html.twig" %}
+{% block body %}
+    <div>
+        <form enctype="multipart/form-data" action="/api/upload" method="POST">
+            <input type="hidden" name="MAX_FILE_SIZE" value="5242880" />
+            Отправить этот файл: <input name="userfile" type="file" />
+            <br/>
+            <input type="submit" value="Отправить файл" />
+        </form>
+    </div>
+{% endblock %}
