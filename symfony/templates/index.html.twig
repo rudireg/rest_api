@@ -9,18 +9,20 @@
             <input type="submit" value="Отправить файл" />
         </form>
     </div>
-    <hr>
 
-
-
-
-
+    <hr/>
     <div id="drop-block">
+        <h3>Множественная загрузка</h3>
         <form class="my-form">
-            <label class="button" for="fileElem">Множественная загрузка</label><br/>
             <input type="file" name="userfile" id="fileElem" multiple accept="image/*" onchange="upload(this.files)">
         </form>
     </div>
 
+    <hr/>
+    <h3>Загрузка через URL</h3>
+    <form>
+        <input id="url" type="text" name="url" size="70" /><br/>
+        <button type="button" onclick="uploadUrl()">Загрузить</button>
+    </form>
 
 {% endblock %}

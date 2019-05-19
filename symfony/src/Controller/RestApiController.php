@@ -44,9 +44,9 @@ class RestApiController extends AbstractController
                 $rv = $dataSet = [];
                 if (!empty($_FILES['userfile'])) {
                     $dataSet[] = $_FILES['userfile'];
-                } else if (!empty($_FILES['file']) && is_array($_FILES['file'])){
+                } else if (!empty($_FILES['file']) && is_array($_FILES['file'])) {
                     $len = count($_FILES['file']['tmp_name']);
-                    for ($i=0; $i<$len;$i++) {
+                    for ($i = 0; $i < $len; $i++) {
                         $dataSet[] = [
                             'name' => $_FILES['file']['name'][$i],
                             'type' => $_FILES['file']['type'][$i],
@@ -55,6 +55,8 @@ class RestApiController extends AbstractController
                             'size' => $_FILES['file']['size'][$i]
                         ];
                     }
+                } else if (!empty($url = $request->request->get('url'))) {
+                    $dataSet[] = $url;
                 } else {
                     return new JsonResponse(['error'=>1,'message'=>'Empty data']);
                 }
@@ -71,20 +73,6 @@ class RestApiController extends AbstractController
                     $logger->error(UploadException::codeToMessage($e->getCode()), ['code'=>$e->getCode()]);
                     return new JsonResponse(['error'=>$e->getCode(),'message'=>UploadException::codeToMessage($e->getCode())]);
                 }
-
-//                if (!empty($data)) {
-//                    try {
-//                        // создаем загрузчика
-//                        $loader = $factory->getLoader($data);
-//                        // загружаем файл
-//                        $img = $loader->load($data);
-//                        // изменяем размеры + ведем логирование
-//                        $rv = $editor->process($img, $resize, $logger);
-//                    } catch (\Exception $e) {
-//                        $logger->error(UploadException::codeToMessage($e->getCode()), ['code'=>$e->getCode()]);
-//                        return new JsonResponse(['error'=>$e->getCode(),'message'=>UploadException::codeToMessage($e->getCode())]);
-//                    }
-//                }
                 return new JsonResponse(['success' => 1, 'images'=>$rv]);
                 break;
             case 'DELETE':
