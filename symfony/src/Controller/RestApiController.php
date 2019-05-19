@@ -57,6 +57,8 @@ class RestApiController extends AbstractController
                     }
                 } else if (!empty($url = $request->request->get('url'))) {
                     $dataSet[] = $url;
+                } else if (!empty($base64Data = file_get_contents('php://input'))) {
+                    $dataSet[] = $base64Data;
                 } else {
                     return new JsonResponse(['error'=>1,'message'=>'Empty data']);
                 }
@@ -70,6 +72,7 @@ class RestApiController extends AbstractController
                         $rv[] = $editor->process($img, $resize, $logger);
                     }
                 } catch (\Exception $e) {
+                    // save to DB
                     $logger->error(UploadException::codeToMessage($e->getCode()), ['code'=>$e->getCode()]);
                     return new JsonResponse(['error'=>$e->getCode(),'message'=>UploadException::codeToMessage($e->getCode())]);
                 }
