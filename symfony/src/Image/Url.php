@@ -32,9 +32,29 @@ class Url implements ILoad
         $fileDir = $this->generateUploadDir($this->project_dir);
         $file = file_get_contents($data);
         $ext = pathinfo(parse_url($data, PHP_URL_PATH), PATHINFO_EXTENSION);
+        if (empty($ext) && !empty($http_response_header)) {
+            $ext = $this->getExt($http_response_header);
+        }
+        $ext = !empty($ext)? $ext : 'jpg';
         $filePath = $fileDir . "src.$ext";
         file_put_contents($filePath, $file);
         return new Img(0, 0, $fileDir, $filePath, $ext);
+    }
+
+    /**
+     * Определение типа изображения
+     * @param $hrh
+     * @return mixed|null
+     */
+    protected function getExt($hrh)
+    {
+        foreach ($hrh AS $h) {
+          if (strpos($h, 'Content-Type: image/') !== false) {
+              preg_match('/Content-Type: image\/(.*)/', $h, $matches);
+              return !empty($matches[1])? $matches[1] : NULL;
+          }
+        };
+        return NULL;
     }
 
     /**

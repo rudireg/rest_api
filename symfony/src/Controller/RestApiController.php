@@ -39,47 +39,23 @@ class RestApiController extends AbstractController
      */
     public function upload(Request $request, LoadFactory $factory, Resize $resize, LoggerInterface $logger, Editor $editor)
     {
-        switch ($request->getMethod()) {
-            case 'POST':
-                $rv = $dataSet = [];
-                if (!empty($_FILES['userfile'])) {
-                    $dataSet[] = $_FILES['userfile'];
-                } else if (!empty($_FILES['file']) && is_array($_FILES['file'])) {
-                    $len = count($_FILES['file']['tmp_name']);
-                    for ($i = 0; $i < $len; $i++) {
-                        $dataSet[] = [
-                            'name' => $_FILES['file']['name'][$i],
-                            'type' => $_FILES['file']['type'][$i],
-                            'tmp_name' => $_FILES['file']['tmp_name'][$i],
-                            'error' => $_FILES['file']['error'][$i],
-                            'size' => $_FILES['file']['size'][$i]
-                        ];
-                    }
-                } else if (!empty($url = $request->request->get('url'))) {
-                    $dataSet[] = $url;
-                } else if (!empty($base64Data = file_get_contents('php://input'))) {
-                    $dataSet[] = $base64Data;
-                } else {
-                    return new JsonResponse(['error'=>1,'message'=>'Empty data']);
-                }
-                try {
-                    foreach ($dataSet AS $data) {
-                        // создаем загрузчика
-                        $loader = $factory->getLoader($data);
-                        // загружаем файл
-                        $img = $loader->load($data);
-                        // изменяем размеры + ведем логирование
-                        $rv[] = $editor->process($img, $resize, $logger);
-                    }
-                } catch (\Exception $e) {
-                    // save to DB
-                    $logger->error(UploadException::codeToMessage($e->getCode()), ['code'=>$e->getCode()]);
-                    return new JsonResponse(['error'=>$e->getCode(),'message'=>UploadException::codeToMessage($e->getCode())]);
-                }
-                return new JsonResponse(['success' => 1, 'images'=>$rv]);
-                break;
+        $rv = [];
+        try {
+            $dataSet = $factory->prepare($request);
+            foreach ($dataSet AS $data) {
+                // создаем загрузчика
+                $loader = $factory->getLoader($data);
+                // загружаем файл
+                $img = $loader->load($data);
+                // изменяем размеры + ведем логирование
+                $rv[] = $editor->process($img, $resize, $logger);
+            }
+        } catch (\Exception $e) {
+            // save to DB
+            $logger->error(UploadException::codeToMessage($e->getCode()), ['code'=>$e->getCode()]);
+            return new JsonResponse(['error'=>$e->getCode(),'message'=>UploadException::codeToMessage($e->getCode())]);
         }
-        return new JsonResponse(['error'=>1,'message'=>'Unsupported method']);
+        return new JsonResponse(['success' => 1, 'images'=>$rv]);
     }
 
     /**
