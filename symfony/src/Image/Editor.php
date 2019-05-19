@@ -22,6 +22,19 @@ class Editor
     public function process(Img $img, Resize $resize, LoggerInterface $logger): array
     {
         $rv = [];
+        // source data
+        $info   = getimagesize($img->getPath());
+        $width = $info[0];
+        $height = $info[1];
+        $rv[] = ['width'=>$width, 'height'=>$height, 'url'=>$img->getPath()];
+        // save to DB
+        $logger->log('', '', [
+            'width'      => $width,
+            'height'     => $height,
+            'image_path' => $img->getPath(),
+            'ext'        => $img->getExt()
+        ]);
+
         // thumbnail 100x100
         $imagePath = $img->getDir()."thumbnail.".$img->getExt();
         $newSize = $resize->open($img->getPath())
@@ -35,6 +48,7 @@ class Editor
             'image_path' => $imagePath,
             'ext'        => $img->getExt()
         ]);
+
         // 500
         $imagePath = $img->getDir()."middle.".$img->getExt();
         $newSize = $resize->open($img->getPath())

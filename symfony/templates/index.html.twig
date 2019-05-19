@@ -1,6 +1,7 @@
 {% extends "base.html.twig" %}
 {% block body %}
     <div>
+        <h3>multipart/form-data</h3>
         <form enctype="multipart/form-data" action="/api/upload" method="POST">
             <input type="hidden" name="MAX_FILE_SIZE" value="5242880" />
             Отправить этот файл: <input name="userfile" type="file" />
@@ -8,4 +9,18 @@
             <input type="submit" value="Отправить файл" />
         </form>
     </div>
+    <hr>
+
+
+
+
+
+    <div id="drop-block">
+        <form class="my-form">
+            <label class="button" for="fileElem">Множественная загрузка</label><br/>
+            <input type="file" name="userfile" id="fileElem" multiple accept="image/*" onchange="upload(this.files)">
+        </form>
+    </div>
+
+
 {% endblock %}
