@@ -23,9 +23,10 @@ use Psr\Log\LoggerInterface;
 class RestApiController extends AbstractController
 {
     /**
-     * Matches /api/upload/*
+     * Загрузка изображений
+     * Matches /api/upload
      *
-     * @Route("/api/upload/{type}", name="api_upload", methods={"POST","GET","DELETE"},  defaults={"type":null})
+     * @Route("/api/upload", name="api_upload", methods={"POST"})
      *
      * @param Request $request
      * @param LoadFactory $factory
@@ -38,8 +39,6 @@ class RestApiController extends AbstractController
     public function upload(Request $request, LoadFactory $factory, Resize $resize, LoggerInterface $logger, Editor $editor)
     {
         switch ($request->getMethod()) {
-            case 'GET':
-                break;
             case 'POST':
                 $rv = $dataSet = [];
                 if (!empty($_FILES['userfile'])) {
@@ -78,8 +77,32 @@ class RestApiController extends AbstractController
                 }
                 return new JsonResponse(['success' => 1, 'images'=>$rv]);
                 break;
-            case 'DELETE':
+        }
+        return new JsonResponse(['error'=>1,'message'=>'Unsupported method']);
+    }
+
+    /**
+     * Получение информации об изображении
+     * Matches /api/get/{type}/*
+     *
+     * @Route("/api/get/{type}/*", name="api_getlist", methods={"GET"},  defaults={"type":"image", "id":null},
+     *        requirements={
+     *         "type": "image|error",
+     *         "id": "\d+"
+     *     })
+     *
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function getList(Request $request, int $id)
+    {
+        switch ($request->getMethod()) {
+            case 'GET':
+
                 break;
+            default:
+                return new JsonResponse(['error'=>1,'message'=>'Unsupported method']);
         }
     }
 }
